@@ -9,6 +9,12 @@ public class PlayerMovement : MonoBehaviour
 
     public LayerMask whatStopsMovement;
 
+    public SpriteRenderer spriteRenderer;
+    public Sprite spriteRight;
+    public Sprite spriteLeft;
+    public Sprite spriteFront;
+    public Sprite spriteBack;
+
     private void Start()
     {
         movePoint.parent = null;
@@ -23,6 +29,15 @@ public class PlayerMovement : MonoBehaviour
         {
             if (Mathf.Abs(Input.GetAxisRaw("Horizontal")) == 1f)
             {
+                if (Input.GetAxisRaw("Horizontal") == 1f)
+                {
+                    spriteRenderer.sprite = spriteRight;
+                }
+                else if (Input.GetAxisRaw("Horizontal") == -1f)
+                {
+                    spriteRenderer.sprite = spriteLeft;
+                }
+
                 if (!Physics2D.OverlapCircle(movePoint.position + 
                     new Vector3(Input.GetAxisRaw("Horizontal"), 0f, 0f), 0.2f, whatStopsMovement))
                 {
@@ -31,6 +46,15 @@ public class PlayerMovement : MonoBehaviour
                 
             } else if (Mathf.Abs(Input.GetAxisRaw("Vertical")) == 1f)
             {
+                if (Input.GetAxisRaw("Vertical") == 1f)
+                {
+                    spriteRenderer.sprite = spriteBack;
+                }
+                else if (Input.GetAxisRaw("Vertical") == -1f)
+                {
+                    spriteRenderer.sprite = spriteFront;
+                }
+
                 if (!Physics2D.OverlapCircle(movePoint.position +
                     new Vector3(0f, Input.GetAxisRaw("Vertical"), 0f), 0.2f, whatStopsMovement))
                 {

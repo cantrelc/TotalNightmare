@@ -12,7 +12,7 @@ TagManager:
   - Water
   - UI
   - Wall
-  - 
+  - MoveStopDecoration
   - 
   - 
   - 
@@ -40,4 +40,13 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Backgrounds
+    uniqueID: 546989543
+    locked: 0
+  - name: Walls
+    uniqueID: 1802625485
+    locked: 0
+  - name: Foreground
+    uniqueID: 949299405
     locked: 0

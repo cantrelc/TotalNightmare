@@ -5,15 +5,11 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     public float speed = 5f;
-    public bool canHide = false;
-    public bool isHiding = false; 
     public Transform movePoint;
 
     public LayerMask whatStopsMovement;
-    public LayerMask decorationsThatStop;
 
     public SpriteRenderer spriteRenderer;
-    public Collider2D col;
     public Sprite spriteRight;
     public Sprite spriteLeft;
     public Sprite spriteFront;
@@ -28,7 +24,6 @@ public class PlayerMovement : MonoBehaviour
     void Update()
     {
         transform.position = Vector3.MoveTowards(transform.position, movePoint.position, speed * Time.deltaTime);
-        //Debug.Log(Physics2D.OverlapCircle(decorationsThatStop));
 
         if (Vector3.Distance(transform.position, movePoint.position) <= 0.05f)
         {
@@ -67,21 +62,5 @@ public class PlayerMovement : MonoBehaviour
                 }
             }
         }
-
-        if (col.IsTouchingLayers(decorationsThatStop)) {
-            canHide = true;
-        }
-
-        if ((canHide) && (Input.GetKey(KeyCode.X)) && (!isHiding)) {
-            spriteRenderer.sortingLayerName = "Backgrounds";
-            isHiding = true;
-        }
-
-        if ((isHiding) && (Input.GetKey(KeyCode.X))) {
-            spriteRenderer.sortingLayerName = "Foreground";
-            isHiding = false;
-        } 
-
-
     }
 }

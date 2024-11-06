@@ -4,7 +4,7 @@ using UnityEngine;
 public class EnemyAI : MonoBehaviour
 {
     public GameObject player;
-    public float speed = 5f;
+    public float speed = .01f;
     public Transform movePoint;
     private float distance;
     public float visionDistance;
@@ -21,6 +21,7 @@ public class EnemyAI : MonoBehaviour
     public Sprite spriteBack;
 
     public PlayerHealth playerHealth;
+    public PlayerHide playerHide;
     public float damage;
 
     // Start is called before the first frame update
@@ -38,6 +39,7 @@ public class EnemyAI : MonoBehaviour
             return;
         }
 
+
         //calculate distance between player and enemy
         distance = Vector2.Distance(transform.position, player.transform.position);
         absXDistance = Mathf.Abs(transform.position.x - player.transform.position.x);
@@ -45,9 +47,9 @@ public class EnemyAI : MonoBehaviour
 
         //move towards player
         //TODO: add check for 'if player is not hiding' and change first check to <
-        if (distance > visionDistance && distance > 0.1)
+        if (distance < visionDistance && distance > 0.1)
         {
-            speed = 5f;
+            speed = 1f;
 
             //move enemy
             transform.position = Vector3.MoveTowards(transform.position, movePoint.position, speed * Time.deltaTime);

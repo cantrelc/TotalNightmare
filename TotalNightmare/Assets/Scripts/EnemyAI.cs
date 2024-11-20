@@ -84,8 +84,6 @@ public class EnemyAI : MonoBehaviour
 
             //move enemy
             transform.position = Vector3.MoveTowards(transform.position, movePoint.position, speed * Time.deltaTime);
-            
-            //TODO: update patrol algorithm to make target of the patrol end points
 
             //patrol horizontally if previous movement was on y axis
             if (direction == 0)

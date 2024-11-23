@@ -4,16 +4,11 @@ using UnityEngine;
 public class EnemyAI : MonoBehaviour
 {
     public GameObject player;
-    public Transform movePoint;
     public float speed = .01f;
+    public Transform movePoint;
     private float distance;
-    private int direction;                  //vertical = 0; horizontal = 1
+    public float visionDistance;
     public float patrolLength;              //must be cleanly divisible by 2
-    private float patrolEndPos;
-    private float patrolEndNeg;
-    private bool patrolForward = true;
-    public float horizontalDistanceMoved = 0.0f;
-    private float verticalDistanceMoved = 0.0f;
     public LayerMask whatStopsMovement;
 
     private float absXDistance;
@@ -33,9 +28,6 @@ public class EnemyAI : MonoBehaviour
     void Start()
     {
         movePoint.parent = null;
-
-        patrolEndPos = patrolLength / 2;
-        patrolEndNeg = -1 * (patrolLength / 2);
     }
 
     // Update is called once per frame
@@ -47,15 +39,17 @@ public class EnemyAI : MonoBehaviour
             return;
         }
 
+
         //calculate distance between player and enemy
         distance = Vector2.Distance(transform.position, player.transform.position);
         absXDistance = Mathf.Abs(transform.position.x - player.transform.position.x);
         absYDistance = Mathf.Abs(transform.position.y - player.transform.position.y);
 
         //move towards player
-        if (!playerHide.isHiding && distance > 0.1)
+        //TODO: add check for 'if player is not hiding' and change first check to <
+        if (distance < visionDistance && distance > 0.1)
         {
-            speed = 3f;
+            speed = 1f;
 
             //move enemy
             transform.position = Vector3.MoveTowards(transform.position, movePoint.position, speed * Time.deltaTime);
@@ -78,22 +72,37 @@ public class EnemyAI : MonoBehaviour
                 }
             }
         }
-        else            //patrol
+        else
         {
-            speed = 1f;
+            speed = 2f;
 
             //move enemy
             transform.position = Vector3.MoveTowards(transform.position, movePoint.position, speed * Time.deltaTime);
 
-            //patrol horizontally if previous movement was on y axis
-            if (direction == 0)
+            //TODO: patrol
+            float patrolEndPos = patrolLength / 2;
+            float patrolEndNeg = -1 * (patrolLength / 2);
+            float distanceMoved = 0;
+
+            float dist = Vector3.Distance(movePoint.position, transform.position);
+            if (dist == 0)
             {
-                PatrolHorizontal(patrolEndPos, patrolEndNeg);
-            }
-            //patrol vertically if previous movement was on x axis
-            else if (direction == 1)
-            {
-                PatrolVertical(patrolEndPos, patrolEndNeg);
+                //patrol vertically
+                if (spriteRenderer.sprite == spriteRight || spriteRenderer.sprite == spriteLeft)
+                {
+                    //while (true)        //change to 'while hiding'
+                    {
+                        PatrolVertical(distanceMoved, patrolEndPos, patrolEndNeg);
+                    }
+                }
+                //patrol horizontally
+                else if (spriteRenderer.sprite == spriteFront || spriteRenderer.sprite == spriteBack)
+                {
+                    //while (true)        //change to 'while hiding'
+                    {
+                        PatrolHorizontal(distanceMoved, patrolEndPos, patrolEndNeg);
+                    }
+                }
             }
         }
     }
@@ -112,12 +121,7 @@ public class EnemyAI : MonoBehaviour
                 movePoint.position += new Vector3(1f, 0f, 0f);
                 spriteRenderer.sprite = spriteRight;
             }
-            else    //cannot move right, try to move vertical
-            {
-                MoveVertical();
-            }
-        } 
-        else
+        } else
         {
             //move left
             if (!Physics2D.OverlapCircle(movePoint.position +
@@ -126,52 +130,43 @@ public class EnemyAI : MonoBehaviour
                 movePoint.position += new Vector3(-1f, 0f, 0f);
                 spriteRenderer.sprite = spriteLeft;
             }
-            else    //cannot move left, try to move vertical
-            {
-                MoveVertical();
-            }
         }
-
-        direction = 1;      //last moved direction was horizontal
     }
 
     /* Enemy patrols horizontally between endPos and endNeg */
-    void PatrolHorizontal(float patrolEndPos, float patrolEndNeg)
+    void PatrolHorizontal(float distanceMoved, float patrolEndPos, float patrolEndNeg)
     {
-        float dist = Vector3.Distance(movePoint.position, transform.position);
-        if (dist == 0)
+        while (distanceMoved < patrolEndPos)
         {
-            if (patrolForward)
+            //move right
+            if (!Physics2D.OverlapCircle(movePoint.position +
+                new Vector3(1f, 0f, 0f), 0.2f, whatStopsMovement))
             {
-                //move right
-                if (horizontalDistanceMoved < patrolEndPos && !Physics2D.OverlapCircle(movePoint.position +
-                    new Vector3(1f, 0f, 0f), 0.2f, whatStopsMovement))
-                {
-                    movePoint.position += new Vector3(1f, 0f, 0f);
-                    spriteRenderer.sprite = spriteRight;
-                    horizontalDistanceMoved++;
-                }
-                else
-                {
-                    //reached end of patrol or obstacle prevented movement; reverse direction
-                    patrolForward = false;
-                }
+                movePoint.position += new Vector3(1f, 0f, 0f);
+                spriteRenderer.sprite = spriteRight;
+                distanceMoved++;
             }
             else
             {
-                //move left
-                if (horizontalDistanceMoved > patrolEndNeg && !Physics2D.OverlapCircle(movePoint.position +
-                    new Vector3(-1f, 0f, 0f), 0.2f, whatStopsMovement))
-                {
-                    movePoint.position += new Vector3(-1f, 0f, 0f);
-                    spriteRenderer.sprite = spriteLeft;
-                    horizontalDistanceMoved--;
-                }
-                else
-                {
-                    //reached end of patrol or obstacle prevented movement; reverse direction
-                    patrolForward = true;
-                }
+                //obstacle prevented movement, update distanceMoved so the loop is exited
+                distanceMoved = patrolEndPos;
+            }
+        }
+
+        while (distanceMoved > patrolEndNeg)
+        {
+            //move left
+            if (!Physics2D.OverlapCircle(movePoint.position +
+                new Vector3(-1f, 0f, 0f), 0.2f, whatStopsMovement))
+            {
+                movePoint.position += new Vector3(-1f, 0f, 0f);
+                spriteRenderer.sprite = spriteLeft;
+                distanceMoved--;
+            }
+            else
+            {
+                //obstacle prevented movement, update distanceMoved so the loop is exited
+                distanceMoved = patrolEndNeg;
             }
         }
     }
@@ -189,13 +184,8 @@ public class EnemyAI : MonoBehaviour
             {
                 movePoint.position += new Vector3(0f, 1f, 0f);
                 spriteRenderer.sprite = spriteBack;
-            } 
-            else    //cannot move up, try to move horizontal
-            {
-                MoveHorizontal();
             }
-        } 
-        else
+        } else
         {
             //move down
             if (!Physics2D.OverlapCircle(movePoint.position +
@@ -204,54 +194,45 @@ public class EnemyAI : MonoBehaviour
                 movePoint.position += new Vector3(0f, -1f, 0f);    
                 spriteRenderer.sprite = spriteFront;
             }
-            else    //cannot move down, try to move horizontal
-            {
-                MoveHorizontal();
-            }
         }
-
-        direction = 0;      //last moved direction was vertical
     }
 
     /* Enemy patrols vertically between endPos and endNeg */
-    void PatrolVertical(float patrolEndPos, float patrolEndNeg)
+    void PatrolVertical(float distanceMoved, float patrolEndPos, float patrolEndNeg)
     {
-        float dist = Vector3.Distance(movePoint.position, transform.position);
-        if (dist == 0)
+        while (distanceMoved < patrolEndPos)
         {
-            if (patrolForward)
+            //move up
+            if (!Physics2D.OverlapCircle(movePoint.position +
+                    new Vector3(0f, 1f, 0f), 0.2f, whatStopsMovement))
             {
-                //move up
-                if (verticalDistanceMoved < patrolEndPos && !Physics2D.OverlapCircle(movePoint.position +
-                        new Vector3(0f, 1f, 0f), 0.2f, whatStopsMovement))
-                {
-                    movePoint.position += new Vector3(0f, 1f, 0f);
-                    spriteRenderer.sprite = spriteBack;
-                    verticalDistanceMoved++;
-                }
-                else
-                {
-                    //reached end of patrol or obstacle prevented movement; reverse direction
-                    patrolForward = false;
-                }
+                movePoint.position += new Vector3(0f, 1f, 0f);
+                spriteRenderer.sprite = spriteBack;
+                distanceMoved++;
             }
             else
             {
-                //move down
-                if (verticalDistanceMoved > patrolEndNeg && !Physics2D.OverlapCircle(movePoint.position +
-                            new Vector3(0f, -1f, 0f), 0.2f, whatStopsMovement))
-                {
-                    movePoint.position += new Vector3(0f, -1f, 0f);
-                    spriteRenderer.sprite = spriteFront;
-                    verticalDistanceMoved--;
-                }
-                else
-                {
-                    //reached end of patrol or obstacle prevented movement; reverse direction
-                    patrolForward = true;
-                }
+                //obstacle prevented movement, update distanceMoved so the loop is exited
+                distanceMoved = patrolEndPos;
             }
-        }        
+        }
+        
+        while (distanceMoved > patrolEndNeg)
+        {
+            //move down
+            if (!Physics2D.OverlapCircle(movePoint.position +
+                        new Vector3(0f, -1f, 0f), 0.2f, whatStopsMovement))
+            {
+                movePoint.position += new Vector3(0f, -1f, 0f);
+                spriteRenderer.sprite = spriteFront;
+                distanceMoved--;
+            }
+            else
+            {
+                //obstacle prevented movement, update distanceMoved so the loop is exited
+                distanceMoved = patrolEndNeg;
+            }
+        }
     }
 
     /* Check for collisions */

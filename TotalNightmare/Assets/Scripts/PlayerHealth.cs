@@ -26,6 +26,13 @@ public class PlayerHealth : MonoBehaviour
         {
             spriteRenderer.sprite = spriteDead;
             playerMovement.enabled = false;
+            PlayerDied();
         }
+    }
+
+    private void PlayerDied()
+    {
+        LevelManager.instance.GameOver();
+        gameObject.SetActive(false);
     }
 }

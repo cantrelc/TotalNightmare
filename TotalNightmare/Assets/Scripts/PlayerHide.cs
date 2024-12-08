@@ -42,7 +42,6 @@ public class PlayerHide : MonoBehaviour
     }
 
     private void OnTriggerEnter2D(Collider2D other) {
-        Debug.Log("touch");
         if (other.CompareTag("Hide")) {
             canHide = true;
             Debug.Log("Hide");

@@ -55,7 +55,7 @@ public class EnemyAI : MonoBehaviour
         //move towards player
         if (!playerHide.isHiding && distance > 0.1)
         {
-            speed = 3f;
+            speed = 4f;
 
             //move enemy
             transform.position = Vector3.MoveTowards(transform.position, movePoint.position, speed * Time.deltaTime);
